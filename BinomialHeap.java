@@ -30,11 +30,18 @@ public class BinomialHeap
 	 *
 	 */
 	public HeapItem insert(int key, String info) 
-	{    
+	{
 		HeapItem item = new HeapItem(key, info);
-		this.InnerMeld(this.last, item.getNode());
+		if(this.size == 0){
+			this.min = item.getNode();
+			this.last = item.getNode();
+		}
+		else {
+			this.last = this.InnerMeld(this.last, item.getNode());
+			this.min = key < this.min.item.key ? item.getNode() : this.min;
+		}
 		this.size ++;
-		return item; // should be replaced by student code
+		return item;
 	}
 
 	/**
@@ -44,8 +51,33 @@ public class BinomialHeap
 	 */
 	public void deleteMin()
 	{
-		
-		return; // should be replaced by student code
+		if(this.last == this.last.next){
+			this.last = this.last.child;
+		}
+		else{
+			HeapNode prev = this.last;
+			while (prev.next != this.min) {
+				prev = prev.next;
+			}
+			prev.next = this.min.next;
+			this.min.next = null;
+			if(this.last == this.min){
+				this.last=prev;
+			}
+			this.last = this.InnerMeld(this.last, this.min.child);}
+		this.size --;
+		this.min = this.last;
+		this.last.parent = null;
+		HeapNode node = this.last.next;
+		while (node != this.last){
+			node.parent = null;
+			if(node.item.key < this.min.item.key){
+				this.min = node;
+			}
+			node = node.next;
+		}
+		return;
+		//search min, delet parents
 
 	}
 
@@ -93,7 +125,10 @@ public class BinomialHeap
 	 *
 	 */
 	public void delete(HeapItem item) 
-	{    
+	{
+		int mini = this.findMin().key;
+		this.decreaseKey(item, item.key - mini + 1);
+		this.deleteMin();
 		return; // should be replaced by student code
 	}
 
@@ -104,7 +139,7 @@ public class BinomialHeap
 	 */
 	public void meld(BinomialHeap heap2)
 	{
-		this.InnerMeld(this.last, heap2.last);
+		this.last = this.InnerMeld(this.last, heap2.last);
 		this.size += heap2.size;
 		this.min = this.min.item.key < heap2.min.item.key ? this.min : heap2.min; //this.min = this.min if this.min < heap2.min else heap2.min
 		heap2.min = null;
@@ -113,7 +148,7 @@ public class BinomialHeap
 		return; // should be replaced by student code   		
 	}
 	
-	public void InnerMeld(HeapNode last1, HeapNode last2) 
+	public HeapNode InnerMeld(HeapNode last1, HeapNode last2)
 	{
 		HeapNode prev1 = last1;
 		HeapNode curr1 = prev1.next;
@@ -130,21 +165,35 @@ public class BinomialHeap
 			}
 			else{
 				if(curr2.rank == curr1.rank) {
+					boolean onlytree = curr1 == prev1;
 					HeapNode tmp1 = curr1.next;
 					HeapNode tmp2 = curr2.next;
 					curr1 = this.link(curr1, curr2);
+					if(!onlytree){
 					prev1.next = curr1;
-					curr1.next = tmp1;
+					curr1.next = tmp1;}
+					else{
+						curr1.next = curr1;
+					}
 					while(curr1.rank == curr1.next.rank && curr1 != curr1.next) {
 						tmp1 = curr1.next.next;
+						boolean last2trees = curr1 == tmp1;
 						curr1 = this.link(curr1, curr1.next);
-						prev1.next = curr1;
-						curr1.next = tmp1;
+						if (!last2trees){
+							prev1.next = curr1;
+							curr1.next = tmp1;}
+						else{
+							curr1.next = curr1;
+						}
+					}
+					if(curr1.rank > last1.rank){
+						last1 = curr1;
 					}
 					curr2 = tmp2;
 				}
 				else {
 					if(curr1.next.rank <= curr1.rank) {
+						last1 = curr2;
 						HeapNode tmp2 = curr2.next;
 						curr2.next = curr1.next;
 						curr1.next = curr2;
@@ -161,7 +210,7 @@ public class BinomialHeap
 			}
 			
 		}
-		return;
+		return last1;
 	}
 	
 	public HeapNode link(HeapNode root, HeapNode node) {
@@ -171,7 +220,7 @@ public class BinomialHeap
 			root = tmp;
 		}
 		if(root.child == null) {
-			node.next = null;
+			node.next = node;
 		}
 		else {
 			node.next = root.child.next;
@@ -190,7 +239,7 @@ public class BinomialHeap
 	 */
 	public int size()
 	{
-		return 42; // should be replaced by student code
+		return this.size;
 	}
 
 	/**
@@ -252,6 +301,25 @@ public class BinomialHeap
 		public HeapNode getNode() {
 			return this.node;
 		}
+	}
+	public static void main(String[] args){
+		BinomialHeap b = new BinomialHeap();
+		HeapItem t = b.insert(0, "0");
+		for (int i = 1; i < 20; i++) {
+			HeapItem f = b.insert(i, Integer.toString(i));
+			if (i == 15){t = f;}
+		}
+		//b.decreaseKey(t, 15);
+		BinomialHeap d = new BinomialHeap();
+		//for (int i = 90; i > 80; i--) {
+		//	d.insert(i, Integer.toString(i));
+		//}
+		//PrintHeap.printHeap(d, true);
+		b.delete(t);
+		System.out.println(b.findMin().key);
+		PrintHeap.printHeap(b, true);
+
+
 	}
 
 }
