@@ -74,7 +74,10 @@ public class BinomialHeap
 			if(this.last == this.min){
 				this.last=prev;
 			}
-			this.last = this.InnerMeld(this.last, this.min.child);}
+			if(this.min.child != null) {
+				this.last = this.InnerMeld(this.last, this.min.child);
+			}
+		}
 		this.size --;
 		this.min = this.last;
 		this.last.parent = null;
